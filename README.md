@@ -1,6 +1,9 @@
 ## Feature
-- RSA signature
-- ECDSA signature
-## Hardwares
-- Raspberry Pi 5 Model B 8GB ( Raspios Lite 24.10 )
+### RSA Signature
+- Brute force
+- Fermat factorization
+- Pollards factorization
+- Williams factorization
+### ECDSA signature
+- Brute force
 <br></br>
