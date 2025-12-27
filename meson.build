@@ -11,15 +11,18 @@ project(
     'buildtype=release'])
 
 # include
-inc = include_directories('include')
+inc = include_directories('.')
 
 # source
 src = files(
-  'source/abstract.cpp',
-  'source/command.cpp',
-  'source/ecdsa.cpp',
-  'source/rsa.cpp',
-  'source/main.cpp')
+  'core/abstract.cpp',
+  'core/ecdsa.cpp',
+  'core/rsa.cpp',
+  'core/predefined.cpp',
+  'command/abstract.cpp',
+  'command/ecdsa.cpp',
+  'command/rsa.cpp',
+  'command/main.cpp')
 
 # dependency
 dep_gmp = dependency('gmp', required: true)

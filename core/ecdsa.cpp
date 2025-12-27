@@ -1,5 +1,5 @@
-#include "ecdsa.h"
-#include "predefined.h"
+#include "core/ecdsa.h"
+#include "core/predefined.h"
 
 ecdsa::curve::curve(BIGNUM *p, BIGNUM *a, BIGNUM *b) {
 	char *p_hexstr = BN_bn2hex(p);

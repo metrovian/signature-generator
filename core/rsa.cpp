@@ -1,5 +1,5 @@
-#include "rsa.h"
-#include "predefined.h"
+#include "core/rsa.h"
+#include "core/predefined.h"
 
 std::string decryption_rsa::pem() {
 	LOG_ENTER();

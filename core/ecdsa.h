@@ -1,5 +1,5 @@
 #pragma once
-#include "abstract.h"
+#include "core/abstract.h"
 
 namespace ecdsa {
 enum class attack : uint8_t {
