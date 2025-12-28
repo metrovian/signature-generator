@@ -6,5 +6,4 @@
 ## ECDSA Signature
 - Brute force
 - Shanks algorithm ( BSGS )
-- Pohlig-Hellman algorithm ( PH-BSGS )
 <br></br>
