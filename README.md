@@ -5,6 +5,6 @@
 - Williams factorization
 ## ECDSA Signature
 - Brute force
-- Shanks algorithm
-- Pohlig-Hellman algorithm
+- Shanks algorithm ( BSGS )
+- Pohlig-Hellman algorithm ( PH-BSGS )
 <br></br>
