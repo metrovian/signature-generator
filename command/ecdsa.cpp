@@ -57,6 +57,7 @@ void command_ecdsa_public::setup(CLI::App *parent) {
 	command->add_option("-m, --method", method_, "method")->required();
 	command->callback([this]() { run(); });
 	map_.insert(std::make_pair<std::string, ecdsa::attack>("trial", ecdsa::attack::trial));
+	map_.insert(std::make_pair<std::string, ecdsa::attack>("shanks", ecdsa::attack::shanks));
 }
 
 void command_ecdsa_public::run() {

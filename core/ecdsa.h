@@ -4,6 +4,7 @@
 namespace ecdsa {
 enum class attack : uint8_t {
 	trial = 0,
+	shanks = 1,
 };
 
 struct curve {
@@ -21,7 +22,9 @@ struct point {
 	bool operator==(const point &rhs) const;
 	bool operator!=(const point &rhs) const;
 	point operator+(const point &rhs) const;
+	point operator-(const point &rhs) const;
 	point &operator+=(const point &rhs);
+	point &operator-=(const point &rhs);
 	point &operator=(const point &rhs);
 	point(const point &rhs);
 	point(BIGNUM *x, BIGNUM *y, curve *curve);
@@ -48,6 +51,7 @@ public: /* attack */
 
 protected: /* attack */
 	int8_t trial(const ecdsa::point *public_key, const ecdsa::point *generator, char **scalar);
+	int8_t shanks(const ecdsa::point *public_key, const ecdsa::point *generator, char **scalar);
 
 protected: /* abstract */
 	virtual int8_t decryption(const std::vector<uint8_t> &public_key, std::vector<uint8_t> &shared_key) override final;

@@ -38,6 +38,10 @@ ecdsa::point ecdsa::point::operator+(const ecdsa::point &rhs) const {
 	return ecdsa::point(*this) += rhs;
 }
 
+ecdsa::point ecdsa::point::operator-(const ecdsa::point &rhs) const {
+	return ecdsa::point(*this) -= rhs;
+}
+
 ecdsa::point &ecdsa::point::operator+=(const ecdsa::point &rhs) {
 	if (this->curve_ != rhs.curve_) {
 		LOG_ARGUMENT(curve);
@@ -110,6 +114,18 @@ ecdsa::point &ecdsa::point::operator+=(const ecdsa::point &rhs) {
 	mpz_set(y_, y);
 	mpz_clears(x, y, lambda, num, denom, inverse, tmp, nullptr);
 	return *this;
+}
+
+ecdsa::point &ecdsa::point::operator-=(const ecdsa::point &rhs) {
+	if (this->curve_ != rhs.curve_) {
+		LOG_ARGUMENT(curve);
+		return *this;
+	}
+
+	ecdsa::point inv = rhs;
+	mpz_sub(inv.y_, rhs.curve_->p_, rhs.y_);
+	mpz_mod(inv.y_, inv.y_, rhs.curve_->p_);
+	return *this += inv;
 }
 
 ecdsa::point &ecdsa::point::operator=(const ecdsa::point &rhs) {
@@ -364,6 +380,7 @@ int8_t decryption_ecdsa::calckey(const std::string &public_key, ecdsa::attack al
 	// clang-format off
 	switch (algorithm) {
 	case ecdsa::attack::trial: trial(point_public, point_private, &d_hexstr); break;
+	case ecdsa::attack::shanks: shanks(point_public, point_private, &d_hexstr); break;
 	default:
 		LOG_ARGUMENT(algorithm);
 		RETURN_CLEANUP(retcode, -12);
@@ -454,7 +471,7 @@ int8_t decryption_ecdsa::trial(const ecdsa::point *public_key, const ecdsa::poin
 	mpz_set_ui(d, 0);
 	ecdsa::point point_private = *generator;
 	ecdsa::point point_generator = *generator;
-	uint64_t max = ECSDA_TRIAL_ITERATION;
+	uint64_t max = ECDSA_TRIAL_ITERATION;
 	for (uint64_t i = 0; i < max; ++i) {
 		if (point_private == *public_key) {
 			mpz_set_ui(d, i + 1);
@@ -462,6 +479,62 @@ int8_t decryption_ecdsa::trial(const ecdsa::point *public_key, const ecdsa::poin
 		}
 
 		point_private += point_generator;
+	}
+
+	*scalar = mpz_get_str(nullptr, 16, d);
+	mpz_clear(d);
+	LOG_EXIT();
+	return 0;
+}
+
+int8_t decryption_ecdsa::shanks(const ecdsa::point *public_key, const ecdsa::point *generator, char **scalar) {
+	LOG_ENTER();
+	mpz_t d;
+	mpz_init(d);
+	mpz_set_ui(d, 0);
+	ecdsa::point giant = *public_key;
+	ecdsa::point baby = *generator;
+	ecdsa::point factor = *generator - *generator;
+	uint64_t max = ECDSA_SHANKS_ITERATION;
+	uint64_t a = 0;
+	uint64_t b = 0;
+	std::unordered_map<std::string, uint64_t> table;
+	table.reserve(max + 1);
+	auto serialize = [](const ecdsa::point &p) -> std::string {
+		char *xs = mpz_get_str(nullptr, 16, p.x_);
+		char *ys = mpz_get_str(nullptr, 16, p.y_);
+		std::string s;
+		s.reserve(130);
+		s.append(xs);
+		s.push_back(':');
+		s.append(ys);
+		free(xs);
+		free(ys);
+		return s;
+	};
+
+	for (uint64_t i = 1; i < max; ++i) {
+		table[serialize(baby)] = i;
+		baby += *generator;
+		factor += *generator;
+	}
+
+	for (uint64_t i = 0; i < max; ++i) {
+		auto it = table.find(serialize(giant));
+		if (it != table.end()) {
+			a = it->second;
+			b = i;
+			mpz_t b_mpz, m_mpz;
+			mpz_init_set_ui(b_mpz, b);
+			mpz_init_set_ui(m_mpz, max);
+			mpz_mul(b_mpz, b_mpz, m_mpz);
+			mpz_add_ui(d, b_mpz, a);
+			mpz_clear(b_mpz);
+			mpz_clear(m_mpz);
+			break;
+		}
+
+		giant -= factor;
 	}
 
 	*scalar = mpz_get_str(nullptr, 16, d);
