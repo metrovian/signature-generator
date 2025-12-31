@@ -1,4 +1,4 @@
-# metrovian project
+# signature-generator
 project(
   'signature-generator',
   'cpp', 
